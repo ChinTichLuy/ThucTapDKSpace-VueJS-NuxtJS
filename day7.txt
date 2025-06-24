@@ -1,0 +1,102 @@
+1. Axios – Kết nối với API dạng REST
+Khái niệm:
+Axios là một thư viện giúp gửi yêu cầu HTTP từ trình duyệt tới server (gọi là API)
+Đây là cách phổ biến để giao tiếp giữa frontend (Vue) và backend (PHP, Node.js, Laravel...)
+
+Cách hoạt động:
+    - Trình duyệt gửi yêu cầu lên server (gọi là "request")
+    - Server trả kết quả về (gọi là "response")
+    - Axios đứng giữa, nhận kết quả và cho phép xử lý dễ dàng hơn
+
+ví dụ kiểu:
+Giống như khi gọi món ăn trong nhà hàng (gửi request),
+và người phục vụ (axios) mang thức ăn lại đến bàn đã order (response)
+
+
+2. async/await – Làm việc với dữ liệu bất đồng bộ
+Khái niệm:
+Bất đồng bộ Là những công việc phải chờ thời gian trả về – như gọi API, đọc file, đợi kết quả từ mạng
+
+async/await có tác dụng gì?
+    - Giúp viết code dễ hiểu hơn khi làm việc với các thao tác phải chờ (như đợi dữ liệu từ API)
+    - Tránh lặp đi lặp lại callback hoặc .then() phức tạp
+
+ví dụ:
+khi đặt hàng online (await)
+-> thì mình không đứng đó chờ-> mình đi làm việc khác
+-> khi shipper giao đến thì sẽ nhận (tiếp tục với việc đặt hàng)
+thì async/await sẽ giúp viết chương trình giống như đang chờ, nhưng thật ra không đứng im mà làm việc khác
+
+
+3. Vue Apollo – Cầu nối Vue và GraphQL
+khái niệm:
+GraphQL là một ngôn ngữ truy vấn dữ liệu hiện đại – do Facebook phát triển
+Khác REST, GraphQL cho phép mình yêu cầu đúng dữ liệu cần (không dư, không thiếu)
+còn
+Vue Apollo là thư viện giúp mình tích hợp GraphQL vào ứng dụng Vue.js dễ dàng
+
+Lợi ích của Vue Apollo:
+    - Kết nối GraphQL API nhanh chóng
+    - Dùng useQuery, useMutation giống như gọi API
+    - Tự quản lý bộ nhớ cache, loading, lỗi...
+
+ví dụ:
+REST API như gọi nhiều shipper để lấy từng đơn hàng
+GraphQL là gọi 1 shipper giao hỏa tốc, đúng đơn hàng mình muốn – nhanh hơn, gọn hơn
+
+
+4. Mutation – Gửi dữ liệu để cập nhật server
+Mutation là gì trong GraphQL?
+Là hành động gửi dữ liệu lên server để thay đổi thứ gì đó:
+    - Thêm 
+    - Sửa
+    - Xóa 
+
+Giống như:
+Trong REST thì dùng POST, PUT, DELETE -> thì trong GraphQL dùng mutation
+
+
+5. Subscription – Cập nhật thời gian thực
+khái niệm:
+Subscription Là một tính năng trong GraphQL cho phép nhận dữ liệu ngay khi có thay đổi, không cần reload thủ công
+
+Ví dụ:
+Có bình luận mới, tự hiện lên
+Ai đó gửi tin nhắn, mình nhận được ngay
+-> thì đó là Subscription
+
+làm sao để nó hoạt động?
+    - WebSocket (kết nối mở liên tục)
+    - Server phải hỗ trợ push dữ liệu
+
+ví dụ:
+REST giống như 1 ng dùng cứ hỏi “có gì mới không?”
+Còn Subscription giống như server tự gọi mình khi có chuyện
+
+
+6. Error Handling – Xử lý lỗi mạng và retry
+Tại sao phải xử lý lỗi?
+Khi gọi API, có thể xảy ra:
+    - Mạng yếu, mất kết nối
+    - Server lỗi, timeout
+    - Trả về lỗi cú pháp
+
+Xử lý như thế nào?
+    - Thông báo lỗi cho người dùng
+    - Ghi log cho lập trình viên xem lại
+    - Có thể retry tự động vài lần nếu gặp lỗi tạm thời
+
+vd:
+khi mình gọi điện đặt hàng, nhưng máy bận. Mình có thể:
+    - Gọi lại sau vài phút (retry)
+    - Gửi tin nhắn thông báo bạn bị lỗi (error message)
+    - Ghi vào giấy (để lại lời nhắn) để thử lại sau (fallback với localStorage chẳng hạn)
+
+
+Tổng kết 1 cách đơn giản hóa về kiến thức em tìm hiểu được hôm nay thì:
+Axios	        Gọi REST API – giống gọi điện và nhận phản hồi
+async/await	    Đợi dữ liệu về, viết code dễ hiểu hơn
+Vue Apollo	    Cầu nối Vue và GraphQL – dùng truy vấn thông minh
+Mutation	    Gửi dữ liệu để thay đổi trên server
+Subscription	Nhận dữ liệu mới ngay lập tức qua WebSocket
+Error Handling	Bắt lỗi, thông báo, thử lại nếu cần
