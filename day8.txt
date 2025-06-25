@@ -1,0 +1,211 @@
+1. Vue Material: Cài đặt & Thành phần cốt lõi
+khái niệm:
+Vue Material là một thư viện giao diện người dùng (UI) được xây dựng theo chuẩn Material Design của Google
+Nó cung cấp các component dựng sẵn như nút, card, form, drawer,... để giúp tạo ứng dụng hiện đại, đẹp và dễ dùng
+
+Ưu điểm: dễ tích hợp, nhẹ, phù hợp với Vue CLI, hỗ trợ responsive
+
+Cài đặt:
+npm install vue-material --save
+
+####
+// main.js
+import { createApp } from 'vue'
+import App from './App.vue'
+
+import VueMaterial from 'vue-material'
+import 'vue-material/dist/vue-material.min.css'
+import 'vue-material/dist/theme/default.css'
+
+const app = createApp(App)
+app.use(VueMaterial)
+app.mount('#app')
+####
+
+Thành phần cốt lõi:
+md-button	                    Nút bấm
+md-card                         Thẻ hiển thị nội dung
+md-field	                    Ô nhập liệu (input)
+md-toolbar	                    Thanh tiêu đề
+md-drawer	                    Navigation Drawer
+md-list & md-list-item	        Menu hoặc danh sách
+md-grid, md-layout, md-col	    Bố cục dạng lưới
+
+
+2. Theming: Tuỳ chỉnh giao diện Material
+Khái niệm:
+Vue Material cho phép định nghĩa màu chủ đạo (primary), màu phụ (accent) và cảnh báo (warn) để áp dụng cho toàn ứng dụng
+
+Cách áp dụng:
+####
+app.use(VueMaterial, {
+  theme: {
+    primary: '#1976D2',
+    accent: '#FF4081',
+    warn: '#F44336'
+  }
+})
+####
+
+Áp dụng vào giao diện:
+####
+<md-button class="md-primary">Nút chính</md-button>
+<md-button class="md-accent">Nút phụ</md-button>
+<md-button class="md-warn">Nút cảnh báo</md-button>
+####
+
+
+3. Layouts: Grid – Card – Navigation Drawer
+a. Grid Layout (md-layout, md-col)
+Dùng để chia bố cục linh hoạt theo tỉ lệ:
+####
+<md-layout md-gutter>
+  <md-col md-xsmall="12" md-small="6" md-medium="4">
+    <NoteItem />
+  </md-col>
+</md-layout>
+####
+
+Bố cục tự thay đổi theo kích thước thiết bị:
+    - md-xsmall: điện thoại
+    - md-small: máy tính bảng
+    - md-medium: máy tíh/laptop
+
+b. Card (md-card)
+Dùng để hiển thị từng ghi chú:
+####
+<md-card>
+  <md-card-header>
+    <div class="md-title">{{ note.title }}</div>
+  </md-card-header>
+  <md-card-content>{{ note.content }}</md-card-content>
+  <md-card-actions>
+    <md-button @click="editNote(note)">Sửa</md-button>
+    <md-button class="md-warn" @click="deleteNote(note.id)">Xóa</md-button>
+  </md-card-actions>
+</md-card>
+####
+
+
+c. Navigation Drawer (md-drawer)
+Tạo menu điều hướng bên trái:
+####
+<md-drawer :md-active.sync="drawer" md-permanent="clipped">
+  <md-toolbar class="md-primary">Menu</md-toolbar>
+  <md-list>
+    <md-list-item to="/" aria-current="page">Trang chủ</md-list-item>
+    <md-list-item to="/notes">Ghi chú</md-list-item>
+  </md-list>
+</md-drawer>
+####
+Có thể toggle ẩn/hiện drawer khi ở chế độ mobile
+
+
+4. Responsive Design: Giao diện phản hồi theo thiết bị
+Sử dụng Grid:
+####
+<md-layout md-gutter>
+  <md-col md-xsmall="12" md-small="6" md-medium="4">
+    <NoteItem />
+  </md-col>
+</md-layout>
+####
+Trên mobile: 1 cột, tablet: 2 cột, desktop: 3 cột
+
+Sử dụng media queries:
+####
+@media (max-width: 600px) {
+  .md-layout {
+    flex-direction: column;
+  }
+}
+####
+
+Dùng class md-hidden-*:
+####
+<md-button class="md-hidden-sm-and-down">Chỉ hiện ở desktop</md-button>
+####
+
+
+5. Accessibility: ARIA attributes hỗ trợ người dùng đặc biệt
+tác dụng:
+Giúp người khiếm thị hoặc dùng thiết bị đọc màn hình hiểu nội dung và điều hướng dễ dàng
+
+Áp dụng ARIA:
+    - aria-label: Mô tả thành phần
+    - aria-current="page": Đánh dấu trang hiện tại
+    - role="article": Gán vai trò rõ ràng
+
+Ví dụ:
+####
+<md-drawer aria-label="Navigation menu">
+  ...
+</md-drawer>
+
+<md-card role="article">
+  <md-card-title>{{ note.title }}</md-card-title>
+</md-card>
+
+<md-button aria-label="Xóa ghi chú" @click="deleteNote(id)">
+  <md-icon>delete</md-icon>
+</md-button>
+####
+
+
+6. Component Composition: Tái sử dụng logic giao diện
+Khái niệm:
+Vue 3 cho phép viết logic tái sử dụng qua Composition API, tạo các file riêng trong thư mục composables/ để chia sẻ logic giữa các component
+
+vd:
+Trong src/composables/useNotes.js:
+####
+import { ref, watch } from 'vue'
+
+const notes = ref(JSON.parse(localStorage.getItem('notes')) || [])
+
+function addNote(note) {
+  notes.value.push(note)
+}
+
+function deleteNote(id) {
+  notes.value = notes.value.filter(n => n.id !== id)
+}
+
+watch(notes, () => {
+  localStorage.setItem('notes', JSON.stringify(notes.value))
+}, { deep: true })
+
+export function useNotes() {
+  return { notes, addNote, deleteNote }
+}
+####
+
+Trong NoteForm.vue, Notes.vue:
+####
+import { useNotes } from '@/composables/useNotes'
+
+const { notes, addNote } = useNotes()
+####
+
+Nhờ vậy mà không cần lặp lại logic trong từng component
+
+
+7. LocalStorage: Quản lý dữ liệu
+Cách hoạt động:
+    - Khi mở app -> load dữ liệu từ localStorage
+    - Khi thêm/sửa/xóa -> tự động cập nhật lại localStorage
+
+Lợi ích:
+    - Không cần backend
+    - Dữ liệu không mất khi reload
+    - Dễ kiểm tra, debug
+
+####
+Tổng kết ngắn gọn kiến thức hôm nay em tìm hiểu được là
+
+1. Vue Material                                 Thư viện giao diện dựa theo Material Design, giúp xây dựng UI hiện đại, thân thiện người dùng
+2. Theming (Chủ đề giao diện)                   Tuỳ chỉnh màu sắc (primary, accent, warn), font chữ và phong cách để đồng bộ giao diện theo thương hiệu
+3. Layouts (Bố cục)                             Xây dựng bố cục linh hoạt, responsive theo nhiều thiết bị và nội dung
+4. Responsive Design (Thiết kế phản hồi)        Giao diện tự động điều chỉnh phù hợp mọi loại màn hình (mobile, tablet, desktop)
+5. Accessibility (Truy cập cho mọi người)       Đảm bảo ứng dụng có thể truy cập được với người dùng khuyết tật, đặc biệt là khiếm th
+6. Component Composition (Tái sử dụng logic)    Tổ chức logic theo dạng module có thể tái sử dụng giữa các component để giảm trùng lặp và tăng tính bảo trì
