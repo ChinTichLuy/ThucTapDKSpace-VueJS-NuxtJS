@@ -1,0 +1,150 @@
+I. TỐI ƯU HÓA (Performance Optimization)
+1. v-once
+Khái niệm:
+Là một directive đặc biệt giúp render nội dung một lần duy nhất và không cập nhật lại khi dữ liệu thay đổi
+
+Tác dụng:
+Giảm chi phí cập nhật DOM. Dùng khi nội dung là tĩnh, không cần reactive
+
+Cách dùng:
+####
+<h1 v-once>{{ title }}</h1>
+####
+
+Ví dụ:
+đang có một lời chào đầu trang như: "Welcome to HoangTaly!" mà không bao giờ thay đổi
+-> dùng v-once để không tốn tài nguyên theo dõi biến title
+
+
+2. v-memo
+Khái niệm:
+Là directive mới giúp memo hóa (ghi nhớ) kết quả render khi đầu vào không thay đổi
+
+Tác dụng:
+Giúp tăng hiệu suất bằng cách bỏ qua việc render lại các component nếu đầu vào không đổi
+
+Cách dùng:
+####
+<div v-memo="[propA, propB]">
+  {{ heavyCalculation(propA, propB) }}
+</div>
+####
+Ví dụ:
+Một bảng thống kê lớn được render từ dữ liệu props. Nếu dữ liệu không đổi -> không render lại
+
+
+3. Lazy Loading với Dynamic Imports
+Khái niệm:
+Chia nhỏ ứng dụng ra thành các phần, chỉ tải phần đó khi cần (lazy loading)
+
+Tác dụng:
+Tăng tốc độ tải trang ban đầu (initial load), giúp ứng dụng nhẹ hơn
+
+Cách dùng:
+####
+import { defineAsyncComponent } from 'vue'
+
+const LazyComponent = defineAsyncComponent(() =>
+  import('./LazyComponent.vue')
+)
+####
+
+Ví dụ:
+Một trang sản phẩm có button “Xem chi tiết”
+Khi click -> mới tải component chi tiết bằng defineAsyncComponent
+
+
+II. TESTING (KIỂM THỬ)
+1. Unit Test
+Khái niệm:
+Là loại kiểm thử nhỏ nhất, kiểm tra một phần riêng biệt của code (component, directive,...)
+
+Tác dụng:
+Giúp đảm bảo từng phần hoạt động đúng độc lập
+
+Cách dùng:
+Dùng Vitest + Vue Test Utils để mount component, kiểm tra đầu ra
+
+Ví dụ cụ thể:
+Test component Counter.vue có nút bấm tăng số:
+####
+test('increases count', async () => {
+  const wrapper = mount(Counter)
+  await wrapper.find('button').trigger('click')
+  expect(wrapper.text()).toContain('1')
+})
+
+
+2. Integration Test
+Khái niệm:
+Kiểm thử nhiều phần liên quan tương tác với nhau như component + API + dữ liệu
+
+Tác dụng:
+Đảm bảo ứng dụng hoạt động đúng khi các phần ghép lại
+
+Cách dùng:
+Mock API (axios/fetch), render component và kiểm tra sự kiện, luồng dữ liệu
+
+Ví dụ trừu tượng:
+Component UserList.vue fetch danh sách người dùng từ API 
+-> test xem có render đúng người dùng không sau khi gọi API
+ 
+
+3. Công cụ test
+
+Vitest	                Viết và chạy test (tương tự Jest)
+Vue Test Utils	        Mount và thao tác với component Vue
+@testing-library/vue	Test theo cách người dùng nhìn thấy UI
+
+
+III. ERROR BOUNDARIES (XỬ LÝ LỖI CHẠY)
+1. errorCaptured (Options API)
+Khái niệm:
+Hook dùng để bắt lỗi ở các component con, giúp không bị crash toàn bộ app
+
+Tác dụng:
+Giúp hiển thị fallback UI, log lỗi, hoặc đưa ra xử lý khác khi có lỗi
+
+Cách dùng:
+####
+export default {
+  errorCaptured(err, vm, info) {
+    console.error('Đã bắt lỗi:', err)
+    return false // cho phép lỗi lan lên component cha
+  }
+}
+####
+
+
+2. onErrorCaptured (Composition API)
+Khái niệm:
+Là API tương đương errorCaptured nhưng trong Composition API
+
+Cách dùng:
+####
+import { onErrorCaptured } from 'vue'
+
+setup() {
+  onErrorCaptured((err, instance, info) => {
+    console.log('Error:', err)
+    return false
+  })
+}
+####
+
+Ví dụ:
+source code có component hiển thị dữ liệu nhưng fetch lỗi 
+-> errorCaptured sẽ ngăn app bị vỡ, và thay vào đó hiển thị "Có lỗi xảy ra"
+
+
+#####
+Tổng hợp kiến thức hôm nay em tìm hiểu được:
+
+Kiến thức	            Thuộc nhóm	            Nội dung ngắn ọn
+======================================================================
+v-once	                Tối ưu	            Chỉ render 1 lần, không theo dõi thay đổi dữ liệu
+v-memo	                Tối ưu	            Nhớ kết quả render nếu input không đổi
+defineAsyncComponent	Lazy Load	        Tải component chỉ khi cần
+Vitest	                Testing	            Công cụ chạy test cho Vue (vite-based)
+Vue Test Utils	        Testing	            Thư viện mount và thao tác với component Vue để test
+errorCaptured	        Xử lý lỗi	        Hook để bắt lỗi trong component con, tránh làm crash toàn app
