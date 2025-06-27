@@ -1,0 +1,170 @@
+1. Custom Directives — Tạo logic tái sử dụng
+Khái niệm:
+Custom directive là chỉ thị do mình tự định nghĩa,
+bổ sung thêm khả năng thao tác trực tiếp lên DOM ngoài những directive sẵn có của Vue (như v-if, v-for...)
+
+Tác dụng:
+    - Cho phép tái sử dụng logic thao tác DOM phức tạp
+    - Dễ bảo trì thay vì viết đi viết lại nhiều lần
+    - Có thể dùng để xử lý validate, animation, tooltip, auto-focus...
+
+Cách dùng:
+    - Tạo directive trong app.directive()
+    - Gắn directive đó lên thẻ HTML
+    - Vue sẽ chạy các lifecycle hooks như beforeMount, updated...
+
+Ví dụ:
+####
+app.directive('focus', {
+  mounted(el) {
+    el.focus();
+  }
+});
+####
+Dùng:
+<input v-focus />
+####
+
+->Tự động focus khi mounted
+
+
+2. Mixins vs Composition API — So sánh
+Khái niệm:
+    - Mixins: Một object chứa các options (data, methods, hooks) được trộn vào component
+    - Composition API: Cách khai báo logic dạng function (setup()) giúp chia nhỏ, tái tổ chức rõ ràng hơn
+
+Tác dụng:
+    - Mixins: reuse logic dễ, nhưng có nhược điểm là xung đột tên và khó trace
+    - Composition API: module hóa rõ ràng, dễ đọc, dễ test hơn
+
+Cách dùng:
+
+Mixins:
+####
+export default {
+  mixins: [myMixin],
+}
+####
+
+Composition:
+####
+setup() {
+  const counter = ref(0);
+  return { counter }
+}
+####
+
+Ví dụ :
+    - Mixins: chia sẻ method validate giữa nhiều component
+    - Composition: chia thành composable file useValidate.js để import và tái sử dụng
+
+=>> Composition API = linh hoạt + tránh trùng tên + dễ bảo trì, hiện đại hơn mixin
+
+
+3. Provide / Inject — Dependency Injection
+Khái niệm:
+là 1 cơ chế chia sẻ dữ liệu cha -> con mà không cần props trung gian
+
+Tác dụng:
+    - Truyền dữ liệu cho sâu nhiều cấp component
+    - Tránh props drilling rườm rà
+
+Cách dùng:
+    - provide: đặt tại component cha
+    - inject: lấy ra tại component con cháu bất kỳ
+
+Ví dụ:
+
+// Parent
+provide('theme', 'dark')
+
+// Child or grandchild
+inject('theme')
+
+
+4. Teleport — Render ra ngoài cây DOM cha
+Khái niệm:
+Khi muốn một phần UI (như modal) không bị giới hạn trong bố cục cha, Teleport giúp di chuyển nó ra ngoài
+
+Tác dụng:
+    - Tránh lỗi CSS overflow
+    - Render popup, modal, tooltip dễ dàng
+    - Vẫn quản lý bằng Vue reactivity
+
+Cách dùng:
+####
+<teleport to="body">
+  <div class="modal">Hi from Teleport</div>
+</teleport>
+####
+
+=>> Render modal trực tiếp lên <body> thay vì bị kẹp trong container
+
+
+5. VueUse — Utility Composables
+Khái niệm:
+VueUse = thư viện tập hợp hàng trăm composable hooks siêu tiện ích (inspired by React Hooks)
+
+Tác dụng:
+    - Tiết kiệm thời gian
+    - Các logic lặp đi lặp lại như debounce, localStorage, clipboard...
+    - Kết hợp cực tốt Composition API
+
+Cách dùng:
+####
+npm i @vueuse/core
+####
+import { useDark } from '@vueuse/core'
+
+const isDark = useDark()
+####
+
+Ví dụ:
+    - useMouse(): bắt vị trí chuột
+    - useNetwork(): bắt trạng thái mạng
+
+
+6. Refactoring: Options API -> Composition API
+Khái niệm:
+Refactor = chuyển code cũ Options API sang Composition API (từ data(), methods, computed -> setup())
+
+Tác dụng:
+    - Code dễ module hóa
+    - Dễ chia sẻ logic
+    - Hợp thời, Vue 3 khuyến khích
+
+Cách dùng:
+    - gom data, computed, methods -> đặt trong setup()
+    - có thể chia thành composable files riêng
+
+Ví dụ:
+
+Options API:
+####
+export default {
+  data() { return { count: 0 } },
+  methods: {
+    increment() { this.count++ }
+  }
+}
+####
+
+Composition API:
+####
+setup() {
+  const count = ref(0)
+  const increment = () => count.value++
+  return { count, increment }
+}
+####
+
+
+####
+Tổng hợp lại kiến thức tìm hiểu được ngày 10:
+
+Custom directives           tái sử dụng logic thao tác DOM
+Mixins vs Composition	    Composition hiện đại, dễ tách module
+Provide/Inject	            DI truyền sâu, tránh props trung gian
+Teleport	                render modal/tooltip ngoài DOM cha
+VueUse	                    thư viện composables tiện lợi
+Refactor Composition	    module hóa, maintain dễ
