@@ -1,0 +1,148 @@
+1. Tổng quan Nuxt.js (SSR, SSG, Vue-based)
+Khái niệm:
+    - Nuxt.js là framework dựa trên Vue.js
+    - Giúp xây dựng ứng dụng web dễ dàng hơn nhờ cung cấp sẵn cấu trúc, routing, rendering
+
+Hỗ trợ:
+    - SSR (Server-Side Rendering):      render HTML sẵn trên server (giúp SEO tốt, tải nhanh)
+    - SSG (Static Site Generation):     build sẵn HTML static lúc deploy (cực nhanh, host dễ dàng)
+    - SPA (Single Page Application):    nếu muốn cũng có thể build dạng SPA như Vue thuần
+
+Tác dụng:
+    - Tăng tốc phát triển nhờ cấu hình sẵn
+    - Hỗ trợ SEO tốt hơn so với SPA Vue
+    - Dễ deploy (hosting static hoặc server)
+    - Có hệ thống route tự động, quản lý layouts rõ ràng
+
+Triển khai render:
+    - SSR (server Node chạy liên tục)
+    - SSG (xuất ra static HTML)
+
+Ví dụ:
+
+Một blog cá nhân:
+Viết bài và render sẵn HTML (SSG) -> cực nhanh, không cần server mạnh
+
+Một trang tin tức:
+SSR -> luôn cập nhật dữ liệu mới khi người dùng request
+
+
+
+2. Installation (npx create-nuxt-app)
+Khái niệm:
+    - Nuxt cung cấp create-nuxt-app để khởi tạo nhanh dự án
+    - Tương tự vue create nhưng riêng cho Nuxt
+
+Cách dùng:
+####
+npx create-nuxt-app my-project
+
+sau đó chọn:
+package manager
+
+UI framework (Tailwind, Bootstrap, …)
+
+server framework (Express, Koa, …) nếu cần
+
+features: Axios, PWA, etc
+####
+
+Tác dụng:
+    - Tiết kiệm thời gian setup
+    - Tạo ngay cấu trúc thư mục chuẩn
+
+
+
+3. Project structure (pages/, layouts/, plugins/)
+Khái niệm & tác dụng:
+    - pages/: định nghĩa các route (tự động)
+    - layouts/: bố cục trang (header, footer chung)
+    - plugins/: inject các thư viện hoặc logic chạy trước khi render
+
+Cách dùng:
+    - Tạo file .vue trong pages/ -> auto có route
+    - Định nghĩa layout trong layouts/default.vue
+    - Viết plugin trong plugins/my-plugin.js, rồi khai báo trong nuxt.config.js
+
+Ví dụ:
+Trang sản phẩm:
+    - pages/products.vue -> /products
+    - layouts/default.vue -> header + footer dùng chung
+    - plugins/axios.js -> cấu hình baseURL
+
+
+
+4. File-based routing (Automatic routes)
+Khái niệm:
+    - Nuxt tự động generate routes dựa trên cấu trúc pages/
+    - Không cần viết vue-router thủ công
+
+Tác dụng:
+    - Tiết kiệm công sức
+    - Dễ bảo trì
+    - Route rõ ràng, trùng với thư mục
+
+Ví dụ:
+pages/users/_userId.vue -> /users/:userId
+biến _userId dùng params trong asyncData hoặc useRoute
+
+
+
+5. Nuxt config (nuxt.config.js basics)
+Khái niệm:
+    - File cấu hình chính của Nuxt
+    - Kiểu giống vite.config.js hoặc webpack.config.js nhưng dành cho Nuxt
+
+Tác dụng:
+    - Quản lý module
+    - Khai báo plugin
+    - Cấu hình buil
+    - SEO meta, router, middleware
+
+Ví dụ:
+
+Dùng Tailwind + Axios
+####
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/axios']
+})
+####
+
+
+6. Static hosting (generate vs build)
+Khái niệm:
+    - nuxt build:    build project SSR (server sẽ render lúc chạy)
+    - nuxt generate: build static HTML (SSG), chỉ cần host như website tĩnh
+
+Tác dụng:
+    - generate: phù hợp blog, landing page (ít đổi nội dung, nhanh, SEO tốt)
+    - build:    phù hợp site nhiều data thay đổi realtime (e-commerce, mạng xã hội)
+
+Cách dùng:
+
+Static:
+####
+nuxt generate
+-> xuất ra thư mục dist/ -> upload lên Netlify, Vercel, Firebase Hosting
+####
+
+SSR:
+####
+nuxt build
+nuxt start
+-> chạy server Node thật
+####
+
+Ví dụ:
+    - Trang giới thiệu công ty -> generate
+    - Trang đặt vé máy bay realtime -> build + server
+
+
+###
+Tổng kiến thức hôm nay em tìm hiểu được:
+Tổng quan Nuxt.js	        Framework Vue hỗ trợ SSR, SSG, SPA để phát triển web nhanh và tối ưu SEO
+Installation	            Dùng npx create-nuxt-app để khởi tạo dự án với cấu hình sẵn
+Project structure	        Gồm pages/, layouts/, plugins/ giúp tổ chức code rõ ràng, dễ mở rộng
+File-based routing	        Tự động tạo route theo cấu trúc thư mục pages/, không cần config vue-router
+Nuxt config	                nuxt.config.js quản lý module, meta, plugin và cấu hình toàn cục
+Static hosting	            generate xuất site tĩnh, build chạy SSR cần server Node thật
