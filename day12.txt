@@ -1,0 +1,137 @@
+1. Pages (Creating pages from files)
+Khái niệm:
+    - Trong Nuxt, các file .vue nằm trong thư mục pages/ sẽ tự động được coi là một route
+    - Tương tự router của Vue nhưng Nuxt tự sinh route, giúp giảm cấu hình thủ công
+
+Tác dụng:
+    - Tự động hóa routing, chỉ cần tạo file là có route
+    - Quản lý cấu trúc dự án dễ nhìn, dễ scale
+
+Ví dụ:
+Dự án bán hàng có pages/products.vue -> hiển thị danh sách sản phẩm
+pages/contact.vue -> route /contact tự sinh
+
+
+
+2. AsyncData (Server-side data fetching)
+Khái niệm:
+    - Một hook đặc biệt chỉ có ở Nuxt
+    - Chạy trước khi trang được render trên server hoặc client
+    - Cho phép fetch data và truyền vào props của component
+
+Tác dụng:
+    - Hỗ trợ SSR/SSG rất tốt
+    - SEO tốt hơn do dữ liệu được render sẵn trong HTML
+
+Cách dùng trong source code kiểu:
+####
+export default {
+  async asyncData({ $axios }) {
+    const products = await $axios.$get('/api/products')
+    return { products }
+  }
+}
+####
+
+Ví dụ:
+Blog: asyncData gọi API lấy danh sách bài viết để server trả sẵn HTML
+Shop: gọi API lấy danh mục sản phẩm trước khi render
+
+
+
+3. Fetch Hook (Client/server-side fetching)
+Khái niệm:
+    - Hook khác của Nuxt (fetch)
+    - Cũng dùng để fetch data nhưng chạy sau khi component được khởi tạo
+    - Có thể chạy server (lần đầu) và chạy client (khi điều hướng trang)
+
+Tác dụng:
+    - Linh hoạt hơn asyncData, phù hợp cho SPA
+    - Giúp data luôn được cập nhật khi điều hướng mà không reload toàn trang
+
+dùng trong source code:
+####
+export default {
+  data() { return { products: [] }},
+  async fetch() {
+    this.products = await this.$axios.$get('/api/products')
+  }
+}
+####
+
+Ví dụ:
+Trang chi tiết sản phẩm -> khi bấm sang sản phẩm khác, fetch chạy lại để nạp dữ liệu mới
+
+
+
+4. Static Generation (nuxt generate)
+Khái niệm:
+- Build ra static HTML từ Nuxt
+- Không cần server Node chạy liên tục
+- Còn gọi là SSG (Static Site Generation)
+
+Tác dụng:
+    - Tốc độ cực nhanh
+    - Có thể deploy trên bất kỳ web hosting tĩnh nào (Vercel, Netlify)
+    - Bảo mật tốt vì không có server-side code đang chạy
+
+Ví dụ:
+    - Portfolio cá nhân, blog cá nhân: build ra HTML tĩnh
+    - Landing page cố định: build 1 lần, host static
+
+5. Dynamic routes (_id.vue, params)
+Khái niệm:
+Trong thư mục pages/, đặt tên file dạng _parameter.vue
+Cho phép nhận param động từ URL
+
+Tác dụng:
+    - Xây dựng route động cho chi tiết bài viết, chi tiết sản phẩm
+    - Vẫn giữ cấu trúc tự động routing của Nuxt
+
+Cách dùng:
+pages/products/_id.vue
+-> Tương ứng /products/123 với context.params.id = 123
+
+Ví dụ:
+pages/posts/_slug.vue -> nhận param slug cho bài viết
+pages/user/_username.vue -> hiển thị profile user
+
+
+
+6. Error handling (Error page customization)
+Khái niệm:
+    - Nuxt cho phép bạn tự thiết kế trang báo lỗi
+    - Tạo file layouts/error.vue
+
+Tác dụng:
+    - Giao diện lỗi thân thiện, tùy biến, thay vì chỉ 404 mặc định xấu xí
+    - Hiển thị thông báo phù hợp với branding của dự án
+
+dùng trong source:
+####
+<template>
+  <div>
+    <h1>{{ error.statusCode }}</h1>
+    <p>{{ error.message }}</p>
+  </div>
+</template>
+<script>
+export default {
+  props: ['error']
+}
+</script>
+####
+
+Ví dụ:
+Lỗi 404 -> hiện "Trang không tìm thấy” + nút quay về trang chủ"
+Lỗi server -> thông báo "Hệ thống đang bảo trì, vui lòng quay lại sau"
+
+
+### 
+Tóm lại tổng hợp kiến thức hôm nay tìm hiểu được:
+Pages	            Tạo pages bằng file .vue trong thư mục pages/, tự động sinh route, giảm cấu hình
+AsyncData	        Hook load dữ liệu trước khi render (server/client), giúp HTML có sẵn data (tốt cho SEO)
+Fetch Hook	        Hook fetch data khi component khởi tạo, hỗ trợ cả SSR và SPA khi điều hướng
+Static Generation	Build sẵn HTML static (SSG) bằng nuxi generate, tốc độ nhanh, dễ deploy
+Dynamic routes	    Sử dụng _param.vue để định nghĩa route động, nhận tham số URL tự động
+Error handling	    Tuỳ chỉnh giao diện trang lỗi qua layouts/error.vue, nâng trải nghiệm người dùng
