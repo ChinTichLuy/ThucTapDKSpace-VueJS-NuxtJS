@@ -1,0 +1,165 @@
+1. Layouts (Default, Custom)
+Khái niệm:
+Layout trong Nuxt đóng vai trò như "khung" bao ngoài các page con, ví dụ khung chứa header, footer, sidebar
+Mặc định có layout default.vue (nếu page không chỉ định layout riêng sẽ dùng cái này)
+
+Tác dụng:
+    - Giúp tái sử dụng cấu trúc, đảm bảo code sạch và bảo trì dễ
+    - Tách biệt giữa phần khung và phần nội dung động
+
+ví dụ thực tế:
+Trong page, thêm:
+####
+definePageMeta({
+  layout: 'admin'
+})
+####
+Hoặc mặc định chỉ cần đặt layouts/default.vue, Nuxt tự nhận
+
+Ưu điểm:
+    - Giảm trùng lặp
+    - Quản lý bố cục xuyên suốt
+    - Dễ mở rộng
+
+Nhược điểm:
+    - Có thể phức tạp nếu có quá nhiều layout nhỏ lẻ, khó quản lý tên layout
+
+Ví dụ thực tế:
+Website bán hàng có layout customer và layout admin, mỗi bên 1 khung riêng
+
+
+
+2. Nuxt Components (Auto-import)
+Khái niệm:
+Nuxt tự động quét thư mục components/ và tự import tất cả component trong đó, bạn không cần import thủ công
+
+Tác dụng:
+    - Tiết kiệm thao tác, tăng tốc phát triển
+    - Tránh sai sót khi quên import
+
+Cách hoạt động:
+    - Nuxt dựa vào cấu hình nuxt.config.ts, mặc định đã bật components: true
+    - Quét theo thư mục con (có phân nhóm nếu cần)
+
+Lưu ý thực tiễn:
+Nếu có 2 file cùng tên ở 2 thư mục khác nhau, nên đặt tên rõ ràng tránh trùng
+
+Ví dụ:
+components/BaseButton.vue -> dùng <BaseButton /> thẳng trong template
+
+
+
+3. Server Components (Vue SSR)
+Khái niệm:
+Component render hoàn toàn trên server (SSR = server-side rendering)
+Kết quả trả về là HTML tĩnh, browser chỉ hydrate lại (gắn event)
+
+Tác dụng:
+    - Cải thiện tốc độ tải trang (First Contentful Paint nhanh)
+    - Giúp SEO dễ index
+
+Cách dùng:
+Mặc định Nuxt pages là SSR
+Hoặc chỉ định SSR tại build với ssr: true trong nuxt.config.ts
+
+Ưu điểm:
+    - Tốt cho SEO
+    - Nhanh tải trang ban đầu
+
+Nhược điểm:
+    - Phức tạp khi cần dữ liệu realtime nhiều
+
+Ví dụ:
+Trang tin tức hiển thị tiêu đề bài viết từ API
+
+
+5. Client-only rendering (client-only directive)
+Khái niệm:
+Một số component chỉ hoạt động được khi chạy trên trình duyệt (vì cần window, localStorage, hoặc Google Maps JS SDK)
+Sử dụng <client-only> để ngăn server render nó
+
+Tác dụng:
+Ngăn lỗi window is not defined khi SSR
+Bảo đảm client-side mới render
+
+Cách dùng:
+####
+<client-only>
+  <MyMap />
+</client-only>
+####
+
+Ưu và nhược điểm:
+    - Tránh lỗi SSR
+    - Chậm hơn một chút vì phải đợi client mount
+
+
+
+5. Meta tags (head management)
+Khái niệm:
+Là cách quản lý thẻ <title>, <meta>, Open Graph, Twitter Card,…
+Giúp hiển thị đẹp khi chia sẻ mạng xã hội
+
+Cách dùng trong Nuxt 3:
+####
+definePageMeta({
+  title: 'About us',
+  meta: [
+    { name: 'description', content: 'This is about us page' },
+    { property: 'og:image', content: '/images/cover.png' }
+  ]
+})
+####
+
+Tác dụng:
+    - Nâng điểm SEO
+    - Tăng khả năng hiển thị trên Facebook, Zalo, Google
+
+Ưu điểm:
+    - Cấu hình tập trung
+    - Hỗ trợ reactive (có thể thay đổi theo route)
+
+
+6. Middleware (Page-level)
+Khái niệm:
+Là đoạn logic chạy trước khi page render
+Có thể check user login, phân quyền, chuyển hướng
+
+Cách dùng:
+Tạo file middleware/auth.ts
+####
+export default defineNuxtRouteMiddleware((to, from) => {
+  if (!isLoggedIn()) {
+    return navigateTo('/login')
+  }
+})
+####
+
+Gán vào page:
+####
+definePageMeta({
+  middleware: 'auth'
+})
+####
+
+Tác dụng:
+    - Tăng tính bảo mật
+    - Giảm lỗi user truy cập sai quyền
+
+Ưu điểm:
+    - Linh hoạt
+    - Dễ tái sử dụng
+
+Nhược điểm:
+    - Quá nhiều middleware sẽ khó debug
+
+
+
+####
+Tổng hợp kiến thức hôm nay tìm hiểu được:
+Layouts	                Khung giao diện tổng thể (header, footer), có default và custom, tái sử dụng bố cục
+Nuxt Components	        Tự động import component trong components/, giảm thao tác import
+Server Components	    Render component trên server (SSR), tối ưu SEO, tải nhanh
+Client-only rendering	Chỉ render trên client bằng <client-only>, tránh lỗi SSR
+Meta tags	            Quản lý title, meta, og:image… bằng definePageMeta, tốt cho SEO
+Middleware	            Logic chạy trước page render, kiểm tra quyền, điều hướng, bảo mật
