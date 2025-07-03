@@ -1,0 +1,208 @@
+1. Nuxt Modules (Installation, configuration)
+Khái niệm:
+Module trong Nuxt là phần mở rộng chạy trước, thêm tính năng (như Tailwind, Axios, PWA) và can thiệp sâu vào lifecycle của Nuxt
+
+Tác dụng:
+    - Giúp mở rộng project nhanh mà không phải viết cấu hình thủ công
+    - Dễ bảo trì, dễ chia sẻ cho team
+
+Cách cài đặt & cấu hình:
+
+Cài bằng npm hoặc yarn:
+####
+npm install @nuxtjs/tailwindcss
+####
+
+Khai báo trong nuxt.config.ts:
+#####
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/tailwindcss']
+})
+####
+
+Ưu điểm:
+    - Tích hợp dễ, cộng đồng hỗ trợ nhiều
+    - Chuẩn hóa cách dùng
+
+Nhược điểm:
+    - Nếu lạm dụng quá nhiều module, build có thể chậm và khó debug
+
+
+
+2. Popular modules: @nuxtjs/tailwindcss
+Khái niệm:
+Module chính thức giúp tích hợp Tailwind CSS cực nhanh trong Nuxt
+
+Tác dụng:
+    - Tự cấu hình PurgeCSS
+    - Tích hợp JIT
+    - Hoạt động out-of-the-box
+
+Cách hoạt động:
+    - Quét file trong project để loại bỏ CSS thừa
+    - Tự load tailwind.config.js nếu có
+
+Ví dụ thực tế:
+Viết class Tailwind trực tiếp trong page Vue mà không cần setup thêm:
+
+####
+<div class="bg-blue-500 text-white p-4">HoangTaly</div>
+####
+
+Ưu điểm:
+    - Setup nhanh
+    - Tự động nhận tailwind.config.js
+
+Nhược điểm:
+Nếu tùy chỉnh Tailwind phức tạp, đôi khi cần override config cẩn thận
+
+
+
+3. Plugins (Creating custom plugins)
+Khái niệm:
+Plugin trong Nuxt cho phép chạy đoạn code khởi tạo trước khi render app, ví dụ đăng ký thư viện bên ngoài, mixins, hoặc inject helpers
+
+Tác dụng:
+    - Khởi tạo thư viện 1 lần duy nhất
+    - Dễ inject vào toàn bộ app
+
+Cách tạo:
+Tạo file trong thư mục plugins/:
+####
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.provide('myHelper', () => 'Xin chào')
+})
+####
+
+=>>Nuxt tự động load tất cả plugin trong thư mục này
+
+Ưu điểm:
+    - Quản lý các dependency tập trung
+    - Linh hoạt mở rộng
+
+Nhược điểm:
+    - Nếu viết plugin phức tạp quá có thể khó test
+
+
+
+4. Injecting dependencies: $customPlugin
+Khái niệm:
+Khi cung cấp hàm qua plugin (provide), bạn có thể inject nó trong mọi component bằng $customPlugin hoặc inject
+
+Cách hoạt động:
+
+inject bên trong setup:
+####
+const myHelper = inject('myHelper')
+console.log(myHelper?.()) // Xin chào
+#####
+
+Hoặc dùng useNuxtApp():
+####
+const {$myHelper} = useNuxtApp()
+####
+
+Ưu điểm:
+    - Dễ dùng, tránh prop drilling
+    - Có thể chia sẻ state hoặc hàm cho toàn bộ app
+
+Nhược điểm:
+    - Nếu inject quá nhiều sẽ khó kiểm soát dependencies
+
+Ví dụ thực tế:
+Một plugin format tiền tệ, inject thành $currency, rồi dùng mọi nơi:
+####
+<p>{{ $currency(1000) }}</p>
+####
+
+
+
+5. VueUse in Nuxt (Composables integration)
+Khái niệm:
+VueUse là bộ sưu tập composable hữu ích (hàm dạng composition API) như useDark, useMouse, useStorage
+
+Tác dụng:
+    - Viết code clean
+    - Tái sử dụng dễ dàng
+
+Cách tích hợp:
+####
+npm install @vueuse/core
+####
+
+rồi gọi thẳng trong component:
+####
+import { useDark } from '@vueuse/core'
+const isDark = useDark()
+####
+
+Ưu điểm:
+    - Không cần viết lại logic
+    - Cộng đồng lớn
+
+Nhược điểm:
+    - Cần xem kỹ dependencies tránh xung đột
+
+Ví dụ thực tế:
+Dùng useDark để toggle dark mode:
+####
+<button @click="isDark = !isDark">Toggle Dark</button>
+####
+
+
+
+6. Environment variables (.env setup)
+Khái niệm:
+Biến môi trường lưu trữ giá trị nhạy cảm (API key, base URL) bên ngoài code
+
+Tác dụng:
+    - Bảo mật
+    - Dễ đổi theo môi trường dev, staging, production
+
+Cách dùng:
+
+Tạo file .env:
+####
+API_KEY=hoangtaly
+####
+
+Sử dụng trong runtimeConfig:
+####
+export default defineNuxtConfig({
+  runtimeConfig: {
+    public: {
+      apiKey: process.env.API_KEY
+    }
+  }
+})
+####
+
+trong code:
+####
+const config = useRuntimeConfig()
+console.log(config.public.apiKey)
+####
+
+Ưu điểm:
+    - Không phải hardcode
+    - Dễ bảo trì
+
+Nhược điểm:
+    - Phải cẩn thận không đẩy .env lên GitHub
+
+Ví dụ thực tế:
+Truy vấn API weather, base URL đặt trong .env:
+####
+WEATHER_API=https://api.weather.com
+####
+và gọi bằng config.public.WEATHER_API
+
+
+#####
+Tổng hợp kiến thức sau khi tìm hiểu:
+Nuxt Modules	            Cấu hình mở rộng cho Nuxt, cài qua modules: [], giúp thêm tính năng mà không viết tay, ví dụ Tailwind
+@nuxtjs/tailwindcss	        Module phổ biến để tích hợp Tailwind, hỗ trợ PurgeCSS và JIT, cấu hình cực nhanh
+Plugins	                    Khởi tạo trước app, đăng ký thư viện, inject helpers qua nuxtApp.provide
+Injecting dependencies	    Dùng inject hoặc useNuxtApp().$xxx để truy cập hàm, tiện chia sẻ logic toàn cục
+VueUse	                    Bộ composable tiện ích (useDark, useMouse, …), cài dễ, dùng trực tiếp trong Composition API
+Environment variables	    Quản lý biến môi trường qua .env và runtimeConfig, tách thông tin nhạy cảm khỏi code
