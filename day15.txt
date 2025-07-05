@@ -1,0 +1,214 @@
+1. Static Site Generation (Full Static Mode)
+Khái niệm:
+Static Site Generation (SSG) nghĩa là build ra toàn bộ HTML tĩnh vào thời điểm build-time
+Mọi route được pre-render sẵn thành file tĩnh để server chỉ việc trả về khi có request
+
+Tác dụng:
+    - Tốc độ tải cực nhanh vì file tĩnh
+    - Ít phụ thuộc server, dễ triển khai lên CDN
+    - Giảm tải hạ tầng backend
+    - Cách hoạt động/cấu hình
+
+Trong nuxt.config.ts, cấu hình:
+####
+export default defineNuxtConfig({
+  target: 'static'
+})
+####
+
+sau đó chạy:
+####
+nuxi generate
+####
+toàn bộ site sẽ xuất ra thư mục dist/.
+
+Ví dụ:
+Trang blog cá nhân không đổi nội dung thường xuyên có thể build tĩnh để tiết kiệm chi phí server chẳng hạn
+
+Ưu điểm:
+    - Siêu nhanh
+    - An toàn (không thực thi code server)
+
+Nhược điểm:
+    - Phải build lại toàn bộ site nếu dữ liệu thay đổi
+    - Không thích hợp cho nội dung cập nhật liên tục
+
+
+
+2. Incremental Static Regeneration (ISR / Revalidation)
+Khái niệm:
+ISR cho phép trang static được regenerate sau 1 thời gian nhất định (revalidate) mà không cần rebuild toàn site
+
+Tác dụng:
+    - Vẫn có tốc độ như static
+    - Nhưng nội dung mới có thể được cập nhật sau một khoảng thời gian
+
+Cách hoạt động/cấu hình:
+Trong Nuxt 3, kết hợp cached event handler hoặc custom revalidate logic trong server routes, ví dụ:
+####
+export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Cache-Control', 's-maxage=60, stale-while-revalidate=30')
+})
+####
+giúp cache 60 giây và tự revalidate sau 30 giây
+
+Ví dụ:
+Một site tin tức chỉ cần cập nhật mỗi 5 phút thay vì build lại toàn bộ ngay lập tức
+
+Ưu điểm:
+    - Hài hòa giữa static và dynamic
+    - Tối ưu CDN
+
+Nhược điểm:
+    - Logic phức tạp hơn
+    - Không phải CDN nào cũng hỗ trợ
+
+
+
+3. Image Optimization (@nuxt/image module)
+Khái niệm:
+Module giúp tối ưu ảnh, tự sinh responsive images, lazy-loading, format hiện đại (WebP/AVIF) tự động
+
+Tác dụng:
+    - Giảm dung lượng
+    - Cải thiện Core Web Vitals (LCP, CLS)
+    - Tự động responsive
+    - Cách cài đặt & cấu hình
+
+####
+npm install @nuxt/image
+####
+export default defineNuxtConfig({
+  modules: ['@nuxt/image']
+})
+####
+
+sau đó dùng:
+####
+<NuxtImage src="/my-photo.jpg" width="600" height="400" />
+####
+
+Ví dụ:
+Hiển thị avatar profile mà không cần chỉnh nhiều kích thước, chỉ dùng NuxtImage là xong
+
+Ưu điểm:
+    - Rất dễ dùng
+    - Tương thích CDN
+
+Nhược điểm:
+    - Nếu source ảnh thay đổi dynamic liên tục, phải quản lý cache cẩn thận
+
+
+
+4. SEO (Meta tags, sitemap generation)
+Khái niệm:
+SEO trong Nuxt giúp tối ưu thứ hạng tìm kiếm bằng cách kiểm soát các thẻ meta, robots, sitemap
+
+Tác dụng:
+    - Cải thiện khả năng hiển thị trên Google
+    - Tăng CTR (click-through rate)
+    - Tối ưu social share
+
+
+Cách cấu hình
+Dùng useSeoMeta trong Nuxt 3:
+####
+useSeoMeta({
+  title: 'My Cool Site',
+  description: 'Best site about HoangTaly',
+  ogImage: 'https://example.com/og.png'
+})
+####
+
+Tạo sitemap với module:
+####
+npm install @nuxtjs/sitemap
+####
+
+####
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/sitemap'],
+  sitemap: {
+    hostname: 'https://mysite.com'
+  }
+})
+####
+
+Ví dụ:
+Một blog muốn tự động tạo sitemap.xml để Google crawl dễ hơn
+
+Ưu điểm:
+    - Quản lý meta tập trung
+    - Tăng ranking SEO
+
+Nhược điểm:
+    - Nếu meta viết sai, dễ bị Google đánh gậy (phạt)
+
+
+
+5. Open Graph (Social media previews)
+Khái niệm:
+Open Graph (OG) là bộ meta tags để social network (Facebook, Zalo, LinkedIn) hiển thị preview đẹp khi chia sẻ link
+
+Tác dụng:
+    - Giúp bài đăng chia sẻ hấp dẫn hơn
+    - Tăng khả năng click từ mạng xã hội
+
+
+Cách cấu hình
+Cũng qua useSeoMeta
+####
+useSeoMeta({
+  ogTitle: 'Post TalyTitle',
+  ogDescription: 'Share me!',
+  ogImage: 'https://mysite.com/og-image.png'
+})
+####
+
+Ví dụ:
+khi share link sản phẩm lên Facebook, Facebook sẽ show ảnh, tiêu đề và mô tả đúng chuẩn OG
+
+Ưu điểm:
+    - Tăng tương tác mạng xã hội
+    - Dễ cấu hình trong Nuxt
+
+Nhược điểm
+    - Cần test nhiều để đảm bảo Facebook/Zalo nhận dạng chính xác
+
+
+
+6. Nuxt Content (Markdown-based content)
+Khái niệm:
+Module cho phép viết content bằng Markdown, rồi render như một CMS tích hợp trong Nuxt
+
+Tác dụng:
+    - Quản lý nội dung dễ như blog
+    - Không cần database phức tạp
+    - Tích hợp search, navigation tự động
+
+
+Cách cài đặt & cấu hình
+####
+npm install @nuxt/content
+####
+export default defineNuxtConfig({
+  modules: ['@nuxt/content']
+})
+####
+
+Ưu điểm:
+    - Dễ viết
+    - Không cần backend
+
+Nhược điểm:
+    - Nếu dữ liệu lớn hàng chục ngàn bài, hiệu năng có thể giảm
+
+
+####
+Tổng kết:
+Static Site Generation (Full Static)	 Build sẵn toàn bộ HTML, cực nhanh, dễ triển khai CDN nhưng khó cập nhật dữ liệu động
+Incremental Static Regeneration	         Regenerate static sau 1 thời gian (revalidate), kết hợp cache để vừa nhanh vừa cập nhật được
+Image Optimization (@nuxt/image)	     Tự tối ưu ảnh (WebP, lazy load, responsive), cấu hình đơn giản, cải thiện Core Web Vitals
+SEO (Meta tags, sitemap)	             Quản lý meta, sitemap để tối ưu Google Search, tăng khả năng click, có module hỗ trợ
+Open Graph (Social preview)	             Giúp chia sẻ link đẹp trên Facebook, Zalo, LinkedIn nhờ og:image, og:title, og:description
+Nuxt Content (Markdown)	                 Tích hợp viết nội dung Markdown như blog/CMS, dễ quản lý, không cần database phức tạp
