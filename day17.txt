@@ -1,0 +1,141 @@
+1. Server Routes: api/ folder, REST endpoints
+Khái niệm:
+Server Routes trong Nuxt 3 là các file đặt trong thư mục server/api, tương tự như các endpoint trong REST API
+
+Tác dụng:
+    - Tạo API backend mà không cần framework ngoài
+    - Tương thích với fetch từ client hoặc server
+
+Cách hoạt động/cấu hình:
+Tạo file: server/api/products.ts
+####
+export default defineEventHandler(() => {
+  return [{ id: 1, name: 'Item A' }]
+})
+#####
+
+Ưu điểm:
+    - Tích hợp sẵn trong Nuxt
+    - Dùng được trong SSR
+
+Nhược điểm:
+    - Tùy biến phức tạp sẽ cần xử lý sâu hơn
+
+
+
+2. Server Middleware: Global & Route-specific
+Khái niệm:
+Server Middleware xử lý request trước khi đến API, dùng để log, kiểm tra token, CORS...
+
+Tác dụng:
+    - Xử lý logic chung như xác thực, log
+    - Có thể áp dụng toàn site hoặc theo route
+
+Cách cấu hình:
+Global middleware (trong server/middleware/logger.ts):
+###
+export default defineEventHandler((event) => {
+  console.log(`[${event.method}] ${event.path}`)
+})
+###
+
+Ưu điểm:
+    - Tái sử dụng logic
+    - Giảm lặp lại trong API
+
+Nhược điểm:
+    - Dễ chồng middleware nếu không kiểm soát tốt
+
+
+
+3. Database: Prisma với MongoDB/PostgreSQL
+Khái niệm:
+Prisma là ORM giúp truy xuất dữ liệu dễ dàng, hỗ trợ PostgreSQL, MySQL, MongoDB...
+
+Tác dụng:
+    - Mapping giữa database và TypeScript
+    - Hạn chế lỗi SQL thủ công
+
+Ưu điểm:
+    - Type-safe
+    - Hỗ trợ nhiều DB
+
+Nhược điểm:
+    - Cần học cấu trúc schema của Prisma
+
+
+
+4. API Testing: Mocking với MSW
+Khái niệm:
+MSW (Mock Service Worker) giúp giả lập API response để test frontend mà không cần gọi API thật
+
+Tác dụng:
+    - Test UI khi chưa có backend
+    - Chủ động kiểm soát tình huống (error, timeout...)
+
+Cách hoạt động:
+####
+import { setupWorker, rest } from 'msw'
+
+const worker = setupWorker(
+  rest.get('/api/products', (req, res, ctx) => {
+    return res(ctx.json([{ id: 1, name: 'Taly Product' }]))
+  })
+)
+
+worker.start()
+####
+
+
+Ưu điểm:
+    - Phát triển frontend nhanh hơn
+    - Test dễ hơn
+
+Nhược điểm:
+    - Không dùng cho production
+    - Cần setup riêng trong môi trường test
+
+
+
+5. Caching: Server-side caching
+Khái niệm:
+Caching server-side giúp lưu dữ liệu đã fetch để giảm tải API/DB và tăng tốc phản hồi.
+
+Tác dụng:
+    - Giảm số lần truy cập DB
+    - Phản hồi nhanh hơn
+
+Ưu điểm:
+    - Tăng hiệu suất
+    - Tối ưu SSR
+
+Nhược điểm:
+    - Cần kiểm soát thời gian hết hạn cache
+    - Không phù hợp với dữ liệu thay đổi liên tục
+
+
+
+6. Rate limiting: Basic throttling
+Khái niệm:
+Rate limiting giới hạn số lượng request mà 1 user có thể gửi trong một khoảng thời gian, để chống spam hoặc abuse.
+
+Tác dụng:
+    - Bảo vệ API khỏi tấn công DDoS
+    - Cân bằng tải server
+
+Ưu điểm:
+    - Bảo vệ hệ thống
+    - Dễ mở rộng theo user/token/IP
+
+Nhược điểm:
+    - Cần đồng bộ bộ đếm trong môi trường multi-server
+    - Có thể gây false block nếu không cấu hình hợp lý
+
+#########
+Tóm tắt nội dung tìm hiểu được:
+Server Routes (api/ folder)	    Định nghĩa endpoint REST trực tiếp trong Nuxt qua thư mục server/api
+Server Middleware	            Xử lý logic toàn cục hoặc riêng route như log, auth trước khi đến API
+Database (Prisma)	            ORM mạnh cho PostgreSQL/MongoDB, hỗ trợ typescript và truy vấn dễ dàng
+API Testing (MSW)	            Giả lập API response để test frontend không cần backend thật
+Caching Server-side	            Lưu cache dữ liệu tại server để tăng tốc và giảm tải hệ thống
+Rate Limiting	                Giới hạn request để ngăn spam, chống DDoS, thường dựa trên IP hoặc token
