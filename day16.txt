@@ -1,0 +1,178 @@
+1. Nuxt Auth: @sidebase/nuxt-auth setup
+Khái niệm:
+@sidebase/nuxt-auth là module hỗ trợ tích hợp authentication trong Nuxt 3. Nó cung cấp API sẵn dựa trên NextAuth.js, hoạt động chủ yếu qua server routes (/api/auth/*), giúp xử lý đăng nhập, đăng xuất, session...
+
+Tác dụng:
+    - Tích hợp auth nhanh chóng và bảo mật
+    - Hỗ trợ nhiều loại provider (OAuth, credentials, email, v.v.)
+    - Dùng được với SSR, API route, middleware trong Nuxt
+
+Cách hoạt động/cấu hình:
+Cài đặt:
+###
+npm install @sidebase/nuxt-auth
+###
+
+Trong nuxt.config.ts:
+###
+export default defineNuxtConfig({
+  modules: ['@sidebase/nuxt-auth'],
+  auth: {
+    origin: 'http://localhost:3000',
+    enableGlobalAppMiddleware: true,
+  }
+})
+###
+
+Ví dụ:
+Tạo file server/api/auth/[...].ts để bật API cho NextAuth
+
+Ưu điểm:
+    - Setup nhanh, cấu hình linh hoạt
+    - Tận dụng tính năng của NextAuth như email, OAuth, session
+
+Nhược điểm:
+    - Dựa vào server route, không thuần tĩnh
+    - Tùy biến sâu cần hiểu rõ NextAuth
+
+
+
+2. Providers: OAuth, JWT, local auth
+Khái niệm:
+Authentication provider là cách xác thực người dùng. Nuxt Auth hỗ trợ:
+    - OAuth:        Google, GitHub, Facebook
+    - Credentials:  Đăng nhập bằng username/password
+    - JWT:          Dùng JSON Web Token lưu thông tin người dùng
+
+Tác dụng:
+    - Dễ tích hợp các nền tảng phổ biến
+    - Linh hoạt trong bảo mật và phân quyền
+
+Ưu điểm:
+    - Hạn chế phải tự xây hệ thống login
+    - Được bảo mật sẵn từ nhà cung cấp
+
+Nhược điểm:
+    - Cần setup API key từ provider
+    - Phụ thuộc bên ngoài (Google, Facebook...)
+
+
+
+3. Session management: Server-side sessions
+Khái niệm:
+Session lưu thông tin người dùng giữa các request. Với Nuxt Auth, session được lưu server-side, bảo mật hơn client-side JWT
+
+Tác dụng:
+    - Dễ dùng trong SSR
+    - Tăng bảo mật (token không lộ ở client)
+
+Cách hoạt động:
+Session được lưu qua cookies mã hóa. API /api/auth/session sẽ xác định người dùng
+
+Ví dụ:
+###
+const session = await getServerSession(event)
+###
+
+Ưu điểm:
+    - Bảo mật cao
+    - Không cần xử lý JWT ở client
+
+Nhược điểm:
+    - Cần memory/storage cho session
+    - Có thể chậm hơn nếu không cache
+
+
+
+4. Middleware: Protecting routes
+Khái niệm:
+Middleware giúp kiểm tra quyền truy cập trước khi vào route. Có thể dùng để chặn user chưa đăng nhập.
+
+Tác dụng:
+    - Bảo vệ trang admin, user dashboard
+    - Redirect nếu chưa login
+
+Cách hoạt động/cấu hình:
+Tạo middleware auth.global.ts:
+###
+export default defineNuxtRouteMiddleware(async () => {
+  const session = await useSession()
+  if (!session.data.value) return navigateTo('/login')
+})
+###
+
+Ưu điểm:
+    - Kiểm soát truy cập hiệu quả
+    - Dễ quản lý bảo mật toàn site
+
+Nhược điểm:
+    - Middleware chạy mỗi lần route change
+    - Cần đồng bộ session giữa client/server
+
+
+
+5. Role-based access: Admin vs User
+Khái niệm:
+Role-based access (RBAC) cho phép phân quyền theo vai trò người dùng (admin, user, guest...)
+
+Tác dụng:
+    - Chỉ admin được vào trang quản trị
+    - Hiển thị nội dung theo vai trò
+
+Cách hoạt động:
+Khi login, lưu role vào session:
+###
+session.user.role = 'admin'
+###
+
+Sau đó kiểm tra trong middleware:
+###
+if (session.user.role !== 'admin') return navigateTo('/unauthorized')
+###
+
+Ví dụ:
+Chặn trang /admin nếu user không phải admin
+
+Ưu điểm:
+    - Dễ phân quyền theo chức năng
+    - Tăng bảo mật, giới hạn quyền
+
+Nhược điểm:
+    - Cần cẩn thận khi xử lý ở cả server lẫn client
+    - Phức tạp khi có nhiều cấp vai trò
+
+
+
+6. Security: CSRF, XSS prevention
+Khái niệm:
+    - CSRF: Kẻ tấn công giả mạo request từ người dùng hợp lệ
+    - XSS: Kẻ tấn công chèn mã độc vào giao diện client
+
+Tác dụng:
+    - Tránh lộ token, session
+    - Ngăn chặn mã độc thực thi từ trình duyệt
+
+Cách bảo vệ:
+    - Nuxt Auth tự bảo vệ CSRF qua cookies SameSite=Lax
+    - Dùng v-html cẩn thận, hoặc sanitize nội dung HTML
+    - Cấu hình CSP headers (Content-Security-Policy)
+
+Ưu điểm:
+    - Bảo vệ khỏi nhiều kiểu tấn công phổ biến
+    - Giao diện an toàn hơn
+
+Nhược điểm:
+    - Cần kiểm tra dữ liệu kỹ trước render
+    - Một số tính năng cần thêm bước cấu hình
+
+
+#####
+Tổng hợp tìm hiểu:
+Nuxt Auth (@sidebase/nuxt-auth)	    Module tích hợp xác thực dễ dàng trong Nuxt 3, hỗ trợ SSR và API route qua NextAuth
+Providers (OAuth, JWT, Local Auth)	Hỗ trợ xác thực bằng Google, GitHub (OAuth), JWT hoặc username/password (credentials)
+Session management	                Quản lý phiên người dùng phía server, dùng cookie để bảo mật và tương thích SSR
+Middleware (Bảo vệ route)	        Dùng để kiểm tra đăng nhập hoặc vai trò trước khi vào route, giúp chặn truy cập trái phép
+Role-based access	                Phân quyền người dùng (admin, user...), kiểm tra vai trò qua session để bảo vệ nội dung
+Security (CSRF, XSS)	            Nuxt Auth tự bảo vệ CSRF bằng cookie, tránh dùng v-html để ngăn XSS, nên dùng CSP header
+
+
