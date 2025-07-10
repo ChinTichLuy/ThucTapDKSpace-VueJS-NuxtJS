@@ -1,0 +1,151 @@
+1. GraphQL (Nuxt + Apollo)
+Khái niệm:
+GraphQL là một ngôn ngữ truy vấn API do Facebook phát triển, cho phép client chỉ lấy đúng dữ liệu mình cần
+
+Tác dụng:
+Giảm số lượng dữ liệu truyền đi, tối ưu tốc độ và linh hoạt trong việc truy xuất
+
+Cách dùng:
+Cài @nuxtjs/apollo, cấu hình endpoint, sau đó gọi GraphQL qua this.$apollo.query() hoặc useAsyncQuery() trong Nuxt 3
+
+Ví dụ:
+###
+const { data } = await useAsyncQuery(gql`
+  query {
+    products {
+      id
+      name
+    }
+  }
+`);
+####
+
+
+
+2. Queries / Mutations
+Khái niệm:
+    - Query là để lấy dữ liệu
+    - Mutation là để thay đổi dữ liệu (tạo/sửa/xóa)
+
+Tác dụng:
+Giúp client thao tác với dữ liệu qua một endpoint duy nhất (GraphQL endpoint)
+
+Cách dùng:
+Sử dụng this.$apollo.query() cho query và this.$apollo.mutate() cho mutation
+
+Ví dụ:
+####
+await this.$apollo.mutate({
+  mutation: gql`
+    mutation AddProduct($name: String!) {
+      addProduct(name: $name) {
+        id
+      }
+    }
+  `,
+  variables: { name: 'Book' }
+});
+####
+
+
+
+3. Subscriptions (WebSocket + Apollo)
+Khái niệm:
+Là một cơ chế của GraphQL giúp nhận dữ liệu thời gian thực khi có thay đổi từ server
+
+Tác dụng:
+Hữu ích cho ứng dụng cần cập nhật liên tục như chat, đơn hàng, thông báo,...
+
+Cách dùng:
+Cần cấu hình WebSocket URI trong Apollo Client (link riêng cho subscription)
+
+Ví dụ:
+###
+subscribeToMore({
+  document: gql`
+    subscription {
+      messageAdded {
+        content
+      }
+    }
+  `,
+  updateQuery: (prev, { subscriptionData }) => {
+    return {
+      messages: [...prev.messages, subscriptionData.data.messageAdded]
+    };
+  }
+});
+####
+
+
+
+4. Real-time (Nuxt WebSocket)
+Khái niệm:
+Real-time là khả năng đồng bộ dữ liệu ngay khi có thay đổi giữa client và server
+
+Tác dụng:
+Tăng tính tương tác, trải nghiệm người dùng mượt mà và "sống động"
+
+Cách dùng:
+Tích hợp WebSocket trong Nuxt qua packages như socket.io-client, kết nối tại plugin
+
+Ví dụ:
+####
+import { io } from 'socket.io-client'
+const socket = io('http://localhost:3000')
+socket.on('newMessage', (msg) => {
+  console.log(msg)
+})
+####
+
+
+
+5. Error Handling (GraphQL errors)
+Khái niệm:
+Khi thực hiện truy vấn, có thể xảy ra lỗi như: cú pháp sai, dữ liệu không hợp lệ,...
+
+Tác dụng:
+Giúp phát hiện, log và hiển thị lỗi rõ ràng cho người dùng
+
+Cách dùng:
+Dùng errorPolicy hoặc try-catch với onError trong Apollo config
+
+Ví dụ:
+#####
+try {
+  await this.$apollo.query({ query: ..., errorPolicy: 'all' })
+} catch (error) {
+  console.error(error.graphQLErrors)
+}
+###
+
+
+
+
+6. Apollo Caching
+Khái niệm:
+Apollo tự động lưu dữ liệu truy vấn vào bộ nhớ cache
+
+Tác dụng:
+Giảm số lần gọi server, tăng hiệu suất, hiển thị nhanh hơn
+
+Cách dùng:
+Cấu hình cache policy như cache-first, network-only trong từng query
+
+Ví dụ:
+#####
+this.$apollo.query({
+  query: ...,
+  fetchPolicy: 'cache-first'
+})
+####
+
+
+###########
+Tóm tắt kiến thức tìm hiểu:
+GraphQL	            Sử dụng module @nuxtjs/apollo để kết nối client Nuxt với server GraphQL
+Queries/Mutations	Dùng để lấy dữ liệu (query) hoặc cập nhật dữ liệu (mutation) từ phía server qua GraphQL
+Subscriptions	    Cho phép nhận dữ liệu theo thời gian thực qua WebSocket (thường tích hợp với Apollo Client)
+Real-time	        Tích hợp WebSocket vào Nuxt để xử lý sự kiện real-time như chat, thông báo,...
+Error handling	    Apollo hỗ trợ bắt lỗi GraphQL và network error để xử lý hiển thị hoặc log
+Caching	            Dùng Apollo cache để lưu và đồng bộ dữ liệu client mà không cần gọi lại API nhiều lần
