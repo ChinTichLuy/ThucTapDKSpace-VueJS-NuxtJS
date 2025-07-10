@@ -1,0 +1,142 @@
+1. Testing (Vitest, Nuxt Test Utils)
+Khái niệm:
+Kiểm thử (testing) là quá trình kiểm tra xem code hoạt động đúng như mong đợi. Trong Nuxt, có thể dùng Vitest + Nuxt Test Utils để viết test đơn giản, nhanh gọn
+
+Tác dụng:
+Giảm lỗi, tăng độ tin cậy, dễ bảo trì và refactor sau này
+
+Cách dùng:
+Cài vitest + @nuxt/test-utils, tạo file *.spec.ts, chạy với npx vitest
+
+Ví dụ:
+####
+import { describe, it, expect } from 'vitest'
+import { setup } from '@nuxt/test-utils'
+
+describe('Home Page', () => {
+  setup()
+  it('renders title', async () => {
+    const { page } = await useNuxtApp()
+    expect(page.text()).toContain('Welcome')
+  })
+})
+####
+
+
+2. Unit Tests (Pages, Components)
+Khái niệm:
+Unit test là test cho từng "đơn vị nhỏ" trong ứng dụng như 1 component hoặc 1 hàm
+
+Tác dụng:
+Phát hiện lỗi sớm ở mức nhỏ nhất, dễ cô lập và sửa
+
+Cách dùng:
+Dùng Vitest để test props, event, render logic của components/pages
+
+Ví dụ:
+###
+import { mount } from '@vue/test-utils'
+import Counter from '~/components/Counter.vue'
+
+it('increments count', async () => {
+  const wrapper = mount(Counter)
+  await wrapper.find('button').trigger('click')
+  expect(wrapper.text()).toContain('1')
+})
+####
+
+
+
+3. End-to-End Testing (Playwright for Nuxt)
+Khái niệm:
+Kiểm thử từ đầu đến cuối (E2E) là kiểm tra toàn bộ hành vi người dùng tương tác với ứng dụng như thật
+
+Tác dụng:
+Đảm bảo tính năng chính hoạt động đúng khi kết hợp nhiều thành phần
+
+Cách dùng:
+Cài @playwright/test, cấu hình test server, viết test chạy UI
+
+Ví dụ:
+####
+import { test, expect } from '@playwright/test'
+
+test('homepage loads', async ({ page }) => {
+  await page.goto('http://localhost:3000')
+  await expect(page.locator('h1')).toContainText('Welcome')
+})
+####
+
+
+
+4. Performance (Lazy hydration, Payload extraction)
+Khái niệm:
+Tối ưu hiệu suất (performance) trong Nuxt giúp tải trang nhanh, giảm kích thước file và cải thiện trải nghiệm
+
+Tác dụng:
+Giảm thời gian tải, tăng điểm Lighthouse, tiết kiệm tài nguyên
+
+Cách dùng:
+    - Lazy hydration: Chỉ render component sau khi DOM sẵn sàng
+    - Payload extraction: Tách dữ liệu ra khỏi JS để trình duyệt tải nhanh hơn
+
+Ví dụ:
+####
+<client-only>
+  <MyHeavyComponent />
+</client-only>
+####
+
+
+
+5. Bundle Analysis (Nuxt build analyzer)
+Khái niệm:
+Phân tích gói build (bundle) giúp xem kích thước từng phần trong app (JS, CSS, vendor,...)
+
+Tác dụng:
+Xác định file lớn, tìm cách giảm kích thước hoặc lazy load
+
+Cách dùng:
+Cài @nuxtjs/web-vitals hoặc @nuxt/webpack-analyzer, bật chế độ phân tích
+
+Ví dụ:
+#####
+export default defineNuxtConfig({
+  vite: {
+    build: {
+      rollupOptions: {
+        plugins: [visualizer({ open: true })]
+      }
+    }
+  }
+})
+####
+
+
+
+6. Monitoring (Vue Telescope)
+Khái niệm:
+Vue Telescope là công cụ quan sát ứng dụng Vue/Nuxt khi chạy: thời gian phản hồi, reactivity, lifecycle,...
+
+Tác dụng:
+Dễ debug hiệu năng, reactivity hoặc component gây tốn tài nguyên
+
+Cách dùng:
+Cài và import vue-telescope vào app trong chế độ dev
+
+Ví dụ:
+###
+if (process.dev) {
+  import('vue-telescope').then(({ useTelescope }) => useTelescope())
+}
+####
+
+
+######
+Tóm tắt kiến thức:
+Testing	            Dùng Vitest + Nuxt Test Utils để kiểm thử component, page dễ dàng
+Unit tests	        Kiểm tra các phần nhỏ như component/hàm riêng biệt để phát hiện lỗi sớm
+End-to-End	        Dùng Playwright mô phỏng hành vi người dùng thực, kiểm tra toàn bộ app
+Performance	        Tối ưu hiệu suất với lazy hydration và tách payload giúp tải nhanh hơn
+Bundle analysis	    Phân tích kích thước build để xác định phần cần tối ưu
+Monitoring	        Dùng Vue Telescope để theo dõi hiệu năng và reactivity khi phát triển
